@@ -1,0 +1,21 @@
+"use client";
+
+import dynamic from "next/dynamic";
+
+const Spline = dynamic(() => import("@splinetool/react-spline"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center bg-white text-sm text-neutral-500">
+      Loading 3D scene...
+    </div>
+  ),
+});
+
+interface SplineSceneProps {
+  scene: string;
+  className?: string;
+}
+
+export function SplineScene({ scene, className }: SplineSceneProps) {
+  return <Spline scene={scene} className={className} />;
+}
