@@ -2,7 +2,10 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
   "name": "vibecoding-robotlanding",
-  "compatibility_date": "2026-04-20",
+  // Compatibility dates are a tested runtime pin.
+  // Do not treat this as the local "today" value; update it deliberately
+  // after verifying the app against newer Cloudflare runtime behavior.
+  "compatibility_date": "2026-04-19",
   "compatibility_flags": [
     "nodejs_compat",
     "global_fetch_strictly_public"
