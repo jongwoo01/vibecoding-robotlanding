@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
+import type { Application } from "@splinetool/runtime";
 import { cn } from "@/lib/utils";
 
 const Spline = dynamic(() => import("@splinetool/react-spline"), {
@@ -14,9 +15,16 @@ const Spline = dynamic(() => import("@splinetool/react-spline"), {
 interface SplineSceneProps {
   scene: string;
   className?: string;
+  globalEvents?: boolean;
 }
 
 const subscribe = () => () => {};
+
+function isWebGLContext(
+  context: RenderingContext | null
+): context is WebGLRenderingContext | WebGL2RenderingContext {
+  return Boolean(context && "getExtension" in context);
+}
 
 function supportsWebGL() {
   if (typeof window === "undefined") {
@@ -30,7 +38,7 @@ function supportsWebGL() {
       canvas.getContext("webgl", { powerPreference: "high-performance" }) ??
       canvas.getContext("experimental-webgl");
 
-    if (!context) {
+    if (!isWebGLContext(context)) {
       return false;
     }
 
@@ -86,36 +94,68 @@ class SplineErrorBoundary extends React.Component<
   }
 }
 
-export function SplineScene({ scene, className }: SplineSceneProps) {
+export function SplineScene({
+  scene,
+  className,
+  globalEvents = false,
+}: SplineSceneProps) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const canRender = React.useSyncExternalStore(
     subscribe,
     supportsWebGL,
     () => null
   );
+  const [hasRenderableSize, setHasRenderableSize] = React.useState(false);
 
-  if (canRender === null) {
-    return <SplineFallback className={className} message="Checking 3D support..." />;
-  }
+  React.useEffect(() => {
+    const element = containerRef.current;
 
-  if (!canRender) {
-    return (
-      <SplineFallback
-        className={className}
-        message="This browser or environment cannot create a WebGL context."
-      />
-    );
-  }
+    if (!element || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const updateSize = () => {
+      const { width, height } = element.getBoundingClientRect();
+      setHasRenderableSize(width > 0 && height > 0);
+    };
+
+    updateSize();
+
+    const observer = new ResizeObserver(() => {
+      updateSize();
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const handleLoad = React.useCallback(
+    (app: Application) => {
+      app.setGlobalEvents(globalEvents);
+    },
+    [globalEvents]
+  );
 
   return (
-    <SplineErrorBoundary
-      fallback={
+    <div ref={containerRef} className={cn("h-full w-full", className)}>
+      {!hasRenderableSize ? null : canRender === null ? (
+        <SplineFallback message="Checking 3D support..." />
+      ) : !canRender ? (
         <SplineFallback
-          className={className}
-          message="The 3D renderer failed to initialize, so a static fallback is shown instead."
+          message="This browser or environment cannot create a WebGL context."
         />
-      }
-    >
-      <Spline scene={scene} className={className} />
-    </SplineErrorBoundary>
+      ) : (
+        <SplineErrorBoundary
+          fallback={
+            <SplineFallback message="The 3D renderer failed to initialize, so a static fallback is shown instead." />
+          }
+        >
+          <Spline scene={scene} className="h-full w-full" onLoad={handleLoad} />
+        </SplineErrorBoundary>
+      )}
+    </div>
   );
 }

@@ -1,17 +1,18 @@
 'use client';
 
-import * as React from 'react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { SplineScene } from '@/components/ui/splite';
 import { BlurTextEffect } from '@/components/BlurTextEffect';
 import { ParticleHeadline } from '@/components/ParticleHeadline';
 
-const FADE_IN_UP = {
+const EASE_OUT: [number, number, number, number] = [0.2, 0.65, 0.3, 0.9];
+
+const FADE_IN_UP: Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.65, 0.3, 0.9] } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT } }
 };
 
-const STAGGER = {
+const STAGGER: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -27,7 +28,7 @@ export default function Page() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.5 }}
-        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-slate-200/80 bg-white/75 px-6 py-4 backdrop-blur-xl lg:px-12"
+        className="hero-nav fixed inset-x-0 top-0 z-50 flex items-center justify-between px-6 py-4 lg:px-12"
       >
           <div className="flex items-center gap-2.5 cursor-pointer group">
           <div className="flex relative h-10 w-10 items-center justify-center transition-transform group-hover:scale-105 overflow-hidden mix-blend-multiply">
@@ -111,8 +112,11 @@ export default function Page() {
           className="relative hidden h-[800px] min-w-[640px] items-center justify-center lg:flex lg:w-[115%] lg:self-end lg:-translate-x-[4%] xl:w-[122%] xl:-translate-x-[6%]"
         >
           <div className="relative h-full w-full cursor-grab overflow-visible active:cursor-grabbing">
-            <div className="h-full w-full translate-y-8 scale-[0.92] opacity-80 [filter:saturate(0.5)_brightness(0.98)_contrast(0.95)] xl:translate-y-10 xl:scale-[0.95]">
-              <SplineScene scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode" />
+            <div className="h-full w-full translate-y-8 scale-[0.92] xl:translate-y-10 xl:scale-[0.95]">
+              <SplineScene
+                scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+                globalEvents
+              />
             </div>
           </div>
         </motion.div>

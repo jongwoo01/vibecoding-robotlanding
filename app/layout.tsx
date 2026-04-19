@@ -2,6 +2,22 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+function resolveMetadataBase() {
+  const rawUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.SITE_URL ??
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ??
+    process.env.CF_PAGES_URL ??
+    process.env.VERCEL_URL ??
+    "http://localhost:3000";
+
+  const normalizedUrl = rawUrl.startsWith("http")
+    ? rawUrl
+    : `https://${rawUrl}`;
+
+  return new URL(normalizedUrl);
+}
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -13,6 +29,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: resolveMetadataBase(),
   title: "VibeCoding",
   description: "AI-native development experience by VibeCoding.",
 };
